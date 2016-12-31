@@ -1,8 +1,15 @@
+var ProgressBarPlugin = require('progress-bar-webpack-plugin');
+var path = require("path");
+
 module.exports = {
-  entry: './src/bundle.js',
+  srcPath: path.resolve(__dirname, "../src"),
+  entry: {
+    app: [path.resolve(__dirname, "../src/bundle.js")]
+  },
   output: {
-    path: './dist/',
-    filename: 'bundle.js'
+    path: path.resolve(__dirname, "../dist"),
+    // path: './dist/',
+    filename: 'bundle.js',
   },
   module: {
     loaders: [{
@@ -12,5 +19,11 @@ module.exports = {
       test: /\.(jpg|png)$/,
       loader: "url"
     }, ]
+  },
+  plugins: [
+    new ProgressBarPlugin(),
+  ],
+  devServer: {
+    inline: true
   }
 };

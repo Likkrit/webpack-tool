@@ -44,10 +44,10 @@ var travel = function(dir) {
 var fileReplace = function(pathname) {
   var fileContent = fs.readFileSync(pathname, 'utf-8');
   var newCon = fileContent;
+  // var key = '(=|url\\()(.?)(\/assets)(.+.(jpg|png))';
   for (var i = 0; i < rules.length; i++) {
-    newCon = newCon.replace(new RegExp(rules[i].key, 'ig'), "$1" + rules[i].paddingLeft + "$2$3");
+    newCon = newCon.replace(new RegExp(rules[i].key, 'ig'), "$1$2" + rules[i].paddingLeft + "$3$4");
   }
-  // var key = '(=.)(\/assets.+)(.+.(js|css))';
   fs.writeFileSync(pathname, newCon);
 };
 
@@ -55,7 +55,8 @@ var parseKey = function(config) {
   var rule, key, obj;
   for (var i = 0; i < config.rules.length; i++) {
     rule = config.rules[i];
-    key = '(=.)' + '(' + rule.content.replace(/\//g, '\\/') + ')';
+    // '(=|url\\()(.?)(\/assets)(.+.(jpg|png))'
+    key = '(=|url\\()(.?)' + '(' + rule.content.replace(/\//g, '\\/') + ')';
     key += '(.+.(' + rule.suffix + '))';
     obj = {
       key: key,
