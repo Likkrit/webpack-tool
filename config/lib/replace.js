@@ -42,6 +42,9 @@ var travel = function(dir) {
   });
 };
 var fileReplace = function(pathname) {
+  if ((pathname + "").indexOf('png') || (pathname + "").indexOf('jpg')) {
+    return;
+  }
   var fileContent = fs.readFileSync(pathname, 'utf-8');
   var newCon = fileContent;
   // var key = '(=|url\\()(.?)(\/assets)(.+.(jpg|png))';

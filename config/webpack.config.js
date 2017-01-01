@@ -4,7 +4,7 @@ var path = require("path");
 module.exports = {
   srcPath: path.resolve(__dirname, "../src"),
   entry: {
-    app: [path.resolve(__dirname, "../src/bundle.js")]
+    app: path.resolve(__dirname, "../src/bundle.js")
   },
   output: {
     path: path.resolve(__dirname, "../dist"),
