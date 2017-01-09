@@ -72,10 +72,14 @@ webpackConfig.output = {
 
 // js文件压缩，减小体积
 webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({
-  minimize: false,
+  compress: {
+    screw_ie8: false,
+  },
   output: {
-    comments: false
-  }
+    screw_ie8: false,
+    semicolons: false, // 是否保留分号
+  },
+  // mangle: false,
 }));
 
 // 调用webpack
@@ -86,5 +90,6 @@ var compiler = webpack(webpackConfig, (err, stats) => {
   folder.deleteFolder('./dist/assets/js');
   folder.deleteFolder('./dist/assets/css');
   folder.deleteFolder('./dist/entry');
+  folder.createFolder('./dist/gg');
   console.log("----\n\n构建成功，请查看dist目录\n\n----");
 });

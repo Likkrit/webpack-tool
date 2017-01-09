@@ -26,9 +26,19 @@ webpackConfig.output = {
   filename: '[name].js', // 同名覆盖，优先读取内存的文件。
 };
 
-var compiler = webpack(webpackConfig);
+// // js压缩混淆 兼容IE8
+// webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({
+//     compress :{
+//     screw_ie8 : false,
+//   },
+//   output :{
+//     screw_ie8 : false,
+//     semicolons : false,
+//   },
+//     // mangle: false,
+// }));
 
-console.log("----\n\n调试地址：http://127.0.0.1:" + port + "\n\n----\n");
+var compiler = webpack(webpackConfig);
 
 var server = new webpackDevServer(compiler, {
   // hot: true,
@@ -36,11 +46,14 @@ var server = new webpackDevServer(compiler, {
   stats: {
     colors: true
   },
+ //  proxy: {
+ //   '/api/*': {
+ //       target: 'http://likkrit.com/',
+ //       secure: false,
+ //   }
+ // },
   noInfo: true,
   publicPath: "/entry/",
-  // mimeTypes: {
-  //   'text/html': ['shtml']
-  // },
+}).listen(port,function(){
+  console.log("----\n\n服务监听于：http://127.0.0.1:" + port + " 按下Ctrl+C结束\n\n----\n");
 });
-
-server.listen(port);

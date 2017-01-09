@@ -9,6 +9,7 @@
 {
 copyFolder(src,dst);
 deleteFolder(path);
+createFolder(path);
 }
 */
 
@@ -91,6 +92,15 @@ var copyFolder = {
       });
       console.log("删除目录：" + path);
       fs.rmdirSync(path);
+    }
+  },
+  createFolder: function(path) {
+    try {
+        info = fs.statSync(path);
+      } catch (err) {
+        if (!fs.existsSync(path)) {
+          fs.mkdirSync(path);
+      }
     }
   }
 };
