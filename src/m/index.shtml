@@ -1,0 +1,11 @@
+<html>
+
+<head>
+  <!-- <link rel="stylesheet" href="/assets/css/test.css"> -->
+</head>
+
+<body>test2
+<!-- #include file="../inc/header.html" -->
+</body>
+<script type="text/javascript" src="/entry/common.js"></script>
+</html>

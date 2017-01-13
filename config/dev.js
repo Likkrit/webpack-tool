@@ -1,59 +1,98 @@
 var webpack = require('webpack');
-var webpackDevServer = require('webpack-dev-server');
-
 var webpackConfig = require('./webpack.config.js');
 var path = require("path");
-
-
+var fs = require('fs');
+var express = require('express');
+var app = express();
+var serveIndex = require("serve-index");
+var src = 'src';
 var port = 8080;
 
-// 增加热插拔支持
-// if (Array.isArray(webpackConfig.entry.common)) {
-//   webpackConfig.entry.common.unshift("webpack-dev-server/client?http://localhost:8080/", "webpack/hot/dev-server");
-// } else {
-//   webpackConfig.entry = [
-//     "webpack-dev-server/client?http://localhost:8080/",
-//     "webpack/hot/dev-server",
-//     webpackConfig.entry.common,
-//     webpackConfig.entry.pageA,
-//   ]
-// }
-// webpackConfig.plugins.push(new webpack.HotModuleReplacementPlugin());
-
-
-webpackConfig.output = {
-  path: path.resolve(__dirname, "../dist/entry"), //这一句对webpack dev server无效，但必须存在，实际起作用在下面的publicPath。
-  filename: '[name].js', // 同名覆盖，优先读取内存的文件。
-};
-
-// // js压缩混淆 兼容IE8
-// webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({
-//     compress :{
-//     screw_ie8 : false,
-//   },
-//   output :{
-//     screw_ie8 : false,
-//     semicolons : false,
-//   },
-//     // mangle: false,
-// }));
-
-var compiler = webpack(webpackConfig);
-
-var server = new webpackDevServer(compiler, {
-  // hot: true,
+app.use(require('webpack-dev-middleware')(webpack(webpackConfig), {
   contentBase: webpackConfig.srcPath,
   stats: {
     colors: true
   },
- //  proxy: {
- //   '/api/*': {
- //       target: 'http://likkrit.com/',
- //       secure: false,
- //   }
- // },
   noInfo: true,
   publicPath: "/entry/",
-}).listen(port,function(){
-  console.log("----\n\n服务监听于：http://127.0.0.1:" + port + " 按下Ctrl+C结束\n\n----\n");
+}));
+
+
+app.get("*", function(req, res, next) {
+  var contents, fpath, ffolder, index;
+
+  // 访问具体文件
+  if (new RegExp('(.+.s?html)', 'ig').test(req.path)) {
+    // 当前文件的绝对路径
+    fpath = path.join(__dirname, "..", src, req.path);
+    index = fileExists([fpath]);
+    // 当前文件所在目录的绝对路径
+    ffolder = path.resolve(path.dirname(index));
+    // 访问文件存在
+    if (index) {
+      contents = fs.readFileSync(index, 'utf-8');
+      contents = includeReplace(contents,ffolder);
+      res.setHeader("Content-Type", "text/html; charset=UTF-8");
+      res.end(contents);
+      return;
+    }
+  }
+
+  // 访问目录
+  if (new RegExp('\\/$', 'ig').test(req.path)) {
+    var fpath1 = path.join(__dirname, "..", src, req.path + 'index.html');
+    var fpath2 = path.join(__dirname, "..", src, req.path + 'index.shtml');
+    index = fileExists([fpath1, fpath2]);
+    ffolder = path.resolve(path.dirname(index));
+    if (index) {
+      contents = fs.readFileSync(index, 'utf-8');
+      contents = includeReplace(contents,ffolder);
+      res.setHeader("Content-Type", "text/html; charset=UTF-8");
+      res.end(contents);
+      return;
+    }
+  }
+  // 没有匹配到以上规则 传递到下一层
+  next();
 });
+
+app.get("*", express.static(webpackConfig.srcPath), serveIndex(webpackConfig.srcPath));
+
+
+app.listen(port, function() {
+  console.log('\nlistening at http://%s:%s\n', '127.0.0.1', port);
+});
+
+
+
+
+/* 相关方法 */
+var includeReplace = function(fileContent,ffolder) {
+  return fileContent.replace(/<!--\s?#include\sfile=\\?[\'\"][^\'\"]+\\?[\'\"]\s?-->/ig, function(str) {
+    var childfilePath = str.replace(/[\\\'\"\>\(\);\s<!=-]/g, '').replace('#includefile', '');
+    var childfileContent;
+    childfilePath = new RegExp('^\\/', 'ig').test(childfilePath) ? path.join(__dirname, "..", src, childfilePath) : path.join(ffolder, childfilePath);
+    try {
+      childfileContent = fs.readFileSync(childfilePath, 'utf-8');
+    } catch (e) {
+      console.log('' + e);
+      return ('<br>\n' + e + '<br>\n');
+    }
+    return childfileContent;
+  });
+};
+
+var fileExists = function(array) {
+  var st;
+  for (var i = 0; i < array.length; i++) {
+    try {
+      st = fs.statSync(array[i]);
+    } catch (err) {
+      continue;
+    }
+    if (st.isFile()) {
+      return array[i];
+    }
+  }
+  return '';
+};

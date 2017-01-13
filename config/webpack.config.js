@@ -1,30 +1,32 @@
 var ProgressBarPlugin = require('progress-bar-webpack-plugin');
 var path = require("path");
 var fs = require('fs');
-
 var entryDir = {};
-var i,newCon,newConName;
-var readDir = fs.readdirSync('./src/entry');
-for(i=0;i<readDir.length;i++){
-  newCon = readDir[i].replace(/(.+)(.js)/ig,"../src/entry/$1$2");
-  newConName = readDir[i].replace(/(.+)(.js)/ig,"$1");
-  if(newCon != readDir[i]){
-    entryDir[newConName] = path.resolve(__dirname, newCon);
-  }
-}
+
+var travel = function(dir) {
+  fs.readdirSync(dir).forEach(function(file) {
+    var pathname = path.join(dir, file);
+    if (fs.statSync(pathname).isDirectory()) {
+      travel(pathname);
+    } else {
+      pathname.replace(/(entry\/)(.+)(.js)/ig,function(str,p1,p2,p3,oristr){
+        entryDir[p2] = path.resolve(process.cwd(), pathname);
+      });
+    }
+  });
+};
+
+travel('./src/entry');
+
+
 
 module.exports = {
   srcPath: path.resolve(__dirname, "../src"),
   entry : entryDir,
-  // entry: {
-  //   common: path.resolve(__dirname, "../src/entry/common.js"),
-  //   pageA: path.resolve(__dirname, "../src/entry/pageA.js"),
-  // },
-  // output: {
-  //   path: path.resolve(__dirname, "../dist/bundles"),
-  //   // path: './dist/',
-  //   filename: '[name].js',
-  // },
+  output : {
+    path: path.resolve(__dirname, "../dist/bundles"),
+    filename: '[name].js',
+  },
   module: {
     loaders: [{
       test: /\.css$/,
@@ -32,6 +34,13 @@ module.exports = {
     }, {
       test: /\.(jpg|png)$/,
       loader: "url"
+    },{
+      test: /\.js$/,
+      exclude: /(node_modules|bower_components)/,
+      loader: 'babel-loader',
+      query: {
+        presets: ['es2015']
+      }
     }]
   },
   plugins: [

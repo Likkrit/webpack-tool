@@ -1,12 +1,10 @@
 var webpack = require('webpack');
 var webpackConfig = require('./webpack.config.js');
 var path = require("path");
-
+var fs = require('fs');
 var folder = require("./lib/folder");
 var replace = require("./lib/replace");
-
-
-
+var src = 'src';
 
 
 // 删除dist目录
@@ -17,7 +15,50 @@ console.log("开始进行打包...");
 // 将src资源复制到dist
 folder.copyFolder('./src', './dist');
 
-// 生产环境正则替换，
+var travel = function(dir) {
+  fs.readdirSync(dir).forEach(function(file) {
+    var pathname = path.join(dir, file);
+    if (fs.statSync(pathname).isDirectory()) {
+      travel(pathname);
+    } else {
+      pipeInclude(pathname);
+    }
+  });
+};
+
+travel('./dist');
+
+function pipeInclude(pathname){
+  var fileContent;
+  try {
+    fileContent = fs.readFileSync(pathname, 'utf-8');
+  } catch (e) {
+    console.log('' + e);
+    process.exit();
+  }
+  // 传入的第二个的参数使用相对路径 因为在里面的方法中对引用绝对路径的资源进行了区分 当然也可以使用绝对路径 path.resolve(path.dirname(pathname))
+  var newContent = includeReplace(fileContent,path.dirname(pathname));
+  if(newContent != fileContent){
+    fs.writeFileSync(pathname,newContent);
+  }
+}
+
+function includeReplace(fileContent,ffolder) {
+  return fileContent.replace(/<!--\s?#include\sfile=\\?[\'\"][^\'\"]+\\?[\'\"]\s?-->/ig, function(str) {
+    var childfilePath = str.replace(/[\\\'\"\>\(\);\s<!=-]/g, '').replace('#includefile', '');
+    var childfileContent;
+    childfilePath = new RegExp('^\\/', 'ig').test(childfilePath) ? path.join(__dirname, "..", src, childfilePath) : path.join(ffolder, childfilePath);
+    try {
+      childfileContent = fs.readFileSync(childfilePath, 'utf-8');
+    } catch (e) {
+      console.log('' + e + ' [Template!]');
+      process.exit();
+    }
+    return childfileContent;
+  });
+}
+
+// 生产环境正则替换
 replace({
   path: "./dist",
   rules: [
@@ -65,10 +106,6 @@ for (var key in webpackConfig.entry) {
 }
 webpackConfig.entry = newEntry;
 
-webpackConfig.output = {
-  path: path.resolve(__dirname, "../dist/bundles"),
-  filename: '[name].js',
-};
 
 // js文件压缩，减小体积
 webpackConfig.plugins.push(new webpack.optimize.UglifyJsPlugin({
@@ -90,6 +127,5 @@ var compiler = webpack(webpackConfig, (err, stats) => {
   folder.deleteFolder('./dist/assets/js');
   folder.deleteFolder('./dist/assets/css');
   folder.deleteFolder('./dist/entry');
-  folder.createFolder('./dist/gg');
   console.log("----\n\n构建成功，请查看dist目录\n\n----");
 });
