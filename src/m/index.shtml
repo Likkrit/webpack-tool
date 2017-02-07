@@ -4,8 +4,10 @@
   <!-- <link rel="stylesheet" href="/assets/css/test.css"> -->
 </head>
 
-<body>test2
+<body>
 <!-- #include file="../inc/header.html" -->
+  <br>
+  this is m
 </body>
-<script type="text/javascript" src="/entry/common.js"></script>
+<script type="text/javascript" src="/entry/m-test/m.js"></script>
 </html>
