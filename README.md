@@ -2,11 +2,11 @@
 
 前端工程自动化构建工具，解决前端开发中自动化工具、模块化框架、开发规范、代码部署、开发流程等问题。
 
-谁在使用webpack-tool
+谁在使用Webpack-Tool
 -------
 
-[平安科技 官方网站](http://tech.pingan.com)  
-2password Web版
+- [平安科技 官方网站](http://tech.pingan.com)  
+- 2password Web版
 
 特点
 -------
@@ -22,7 +22,7 @@
 ```
 ├── config            配置目录
 ├── src               项目根目录
-│   ├── entry         控制器目录
+│   ├── entry         入口目录
 │   │   ├── common.js 通用入口文件
 │   │   └── ...      
 │   ├── inc           模板目录
@@ -40,13 +40,16 @@
 开始
 -------
 **第一步：本地调试**
+
 1. `npm install`  
 2. 运行`npm run dev`，访问`127.0.0.1:8080`，进行本地开发调试
 
 **第二步：修改自定义配置**
+
 1. 修改`config/build.js`进行自定义配置
 
 **第三步：构建**
+
 1. 运行`npm run build`，`dist`目录为构建导出目录
 
 开发说明
